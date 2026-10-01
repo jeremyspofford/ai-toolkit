@@ -1,0 +1,9 @@
+{
+  "name": "ai-toolkit",
+  "version": "1.0.0",
+  "description": "Timecard summaries from git/Jira, honest resume tailoring with gap reports, end-of-session evidence capture, and Jira create/start/update workflows.",
+  "author": { "name": "Jeremy Spofford", "url": "https://jeremyspofford.dev" },
+  "homepage": "https://jeremyspofford.dev/toolkit",
+  "repository": "https://github.com/jeremyspofford/ai-toolkit",
+  "license": "MIT"
+}

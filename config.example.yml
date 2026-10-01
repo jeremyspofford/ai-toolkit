@@ -1,0 +1,35 @@
+# Copy to ~/.config/ai-toolkit/config.yml and fill in. Every skill reads its own
+# section; if the file or a section is missing, the skill asks you and offers
+# to write it. This file is personal: keep it out of public repos.
+
+identity:
+  name: Your Name
+  # Substrings that identify your commits across repos (matched case-insensitively
+  # against author name and email). Include every username/email variant you use.
+  author_matches: [yourlastname, yourusername]
+  email: you@example.com           # used for Jira lookups
+  timezone: America/New_York
+
+timecard:
+  workspace: ~/workspace            # one subfolder per client, each holding git repos
+  skip_folders: [dotfiles, archive, personal]
+  worklog: ~/workspace/worklog.md   # optional dated notes for non-code work
+  window: since-last-submission     # or: this-week
+  submission_days: [friday, last-weekday-of-month]
+  output: per-client-per-day        # one short paragraph per client per day
+
+resume:
+  repo: ~/resume                              # your Resume as Code repo (templates/resume-as-code)
+  source: ~/resume/resume/resume.yml          # your general resume (YAML or Markdown)
+  long_form: []                               # optional extra files with more detail about past work
+  evidence_log: ~/resume/evidence/log.md
+  applications_dir: ~/resume/applications
+  build: python3 ~/resume/resume/build.py     # renders a YAML resume to PDF; omit to skip PDFs
+
+jira:
+  site: your-company.atlassian.net
+  default_project: PROJ
+  projects: [PROJ]                  # keys you work in
+  base_branch: origin/dev
+  branch_pattern: "{key-lower}-{slug}"   # e.g. proj-201-add-login
+  in_progress_status: In Progress

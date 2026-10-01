@@ -1,0 +1,64 @@
+# Source of truth for the 2-page resume. Edit content here; `python3 resume/build.py`
+# renders resume/build/<FirstLast>_Resume.{pdf,md}. Rules for what may change: ../RULES.md
+# (Everything below is a fictional example; replace it with your own.)
+version: 1.0.0
+
+header:
+  name: Alex Example
+  title: Senior Platform Engineer
+  email: alex@example.com
+  location: Portland, ME
+  links:
+    - label: github.com/alexexample
+      url: https://github.com/alexexample
+    - label: linkedin.com/in/alexexample
+      url: https://linkedin.com/in/alexexample
+
+summary: >-
+  Platform engineer with 9 years across operations and infrastructure engineering.
+  Builds AWS environments with Terraform, CI/CD that keeps broken changes out of
+  production, and observability that catches problems before customers do.
+
+experience:
+  - title: Senior Platform Engineer
+    company: Example Corp
+    dates: Mar 2022 – Present
+    intro: Owns the shared AWS platform used by six product teams.
+    bullets:
+      - label: Pipeline speed
+        text: Cut merge-request pipelines from 25 minutes to 6 by adding path-based change detection and parallel test shards.
+      - label: Multi-account AWS
+        text: Built a Terraform landing zone across four accounts with shared modules and per-environment overrides.
+      - label: Cost
+        text: Reduced monthly AWS spend 22% through rightsizing, scheduled non-prod shutdowns, and Savings Plans.
+    tech: [AWS, Terraform, GitHub Actions, Kubernetes, Datadog]
+
+  - title: Systems Engineer
+    company: Sample Health
+    dates: Jun 2017 – Mar 2022
+    bullets:
+      - label: Automation
+        text: Replaced manual server builds with Ansible playbooks, cutting provisioning time from two days to two hours.
+      - label: Monitoring
+        text: Rolled out centralized logging and alerting for 300 servers.
+    tech: [Ansible, Linux, VMware, Splunk]
+
+earlier:
+  - title: IT Support Specialist
+    company: Sample Health
+    years: 2016–2017
+    text: Supported 1,200 users and wrote the team's first runbooks.
+
+skills:
+  - category: Cloud
+    items: AWS (EC2, ECS, Lambda, RDS, IAM, CloudWatch)
+  - category: Infrastructure as Code
+    items: Terraform, Ansible
+  - category: CI/CD
+    items: GitHub Actions, GitLab CI
+  - category: Languages
+    items: Python, Bash, Go
+
+certifications:
+  - name: AWS Certified SysOps Administrator – Associate
+    dates: Jan 2024 – Jan 2027

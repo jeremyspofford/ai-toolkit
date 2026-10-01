@@ -1,0 +1,3 @@
+# Updated by the monthly resume review. Shared across machines via git.
+last_content_update: null     # date of the last resume content change (cooldown anchor)
+machines: {}                  # hostname: date of that machine's last successful evidence review

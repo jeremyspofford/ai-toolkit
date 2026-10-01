@@ -1,0 +1,102 @@
+name: Resume
+
+# push to main (resume/ changed): build, tag vX.Y.Z, refresh the `latest` pre-release
+# Run workflow (manual, with a version): promote that version to `released`
+#   and mark it GitHub's Latest release
+on:
+  push:
+    branches: [main]
+    paths: ["resume/**"]
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Version to approve as the released resume (e.g. 1.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: resume
+  cancel-in-progress: false
+
+env:
+
+jobs:
+  build:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install typst pyyaml pypdf
+      - name: Build (fails if over 2 pages)
+        run: python3 resume/build.py
+      - name: Tag version and refresh `latest`
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          V=$(python3 -c "import yaml;print(yaml.safe_load(open('resume/resume.yml'))['version'])")
+          B=$(python3 -c "import yaml;print(yaml.safe_load(open('resume/resume.yml'))['header']['name'].replace(' ','')+'_Resume')")
+          notes=$(awk "/^## v$V /{f=1;next} /^## v/{f=0} f" CHANGELOG.md)
+          [ -z "$notes" ] && notes="See CHANGELOG.md"
+          if ! git rev-parse -q --verify "refs/tags/v$V" >/dev/null; then
+            git tag "v$V" && git push origin "v$V"
+            gh release create "v$V" "resume/build/$B.pdf" "resume/build/$B.md" \
+              --title "Resume v$V" --notes "$notes" --prerelease
+          else
+            echo "v$V already tagged; content changed without a version bump" >&2
+          fi
+          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
+          git tag -f latest && git push -f origin latest
+          gh release create latest "resume/build/$B.pdf" "resume/build/$B.md" \
+            --title "Latest draft (v$V)" --notes "Newest resume version, not yet approved. $notes" --prerelease --latest=false
+
+  release:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0, ref: main }
+      - id: v
+        run: echo "version=${{ inputs.release_version }}" | sed 's/=v/=/' >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install typst pyyaml pypdf
+      - name: Build the approved version and publish it to the site
+        env:
+          V: ${{ steps.v.outputs.version }}
+        run: |
+          set -euo pipefail
+          git rev-parse -q --verify "refs/tags/v$V" >/dev/null || { echo "::error::tag v$V not found"; exit 1; }
+          mkdir -p /tmp/rel && git show "v$V:resume/resume.yml" > /tmp/rel/resume.yml
+          python3 resume/build.py /tmp/rel/resume.yml --out /tmp/rel
+          B=$(python3 -c "import yaml;print(yaml.safe_load(open('/tmp/rel/resume.yml'))['header']['name'].replace(' ','')+'_Resume')")
+          mkdir -p released
+          cp /tmp/rel/resume.yml released/resume.yml
+          cp "/tmp/rel/$B.pdf" "/tmp/rel/$B.md" released/
+          echo "$V" > released/VERSION
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add released
+          git commit -m "release(resume): v$V approved" || echo "nothing to commit"
+          git push origin HEAD:main
+      - name: Move `released` tag and mark Latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ steps.v.outputs.version }}
+        run: |
+          set -euo pipefail
+          git tag -f released && git push -f origin released
+          gh release edit "v$V" --prerelease=false --latest --title "Resume v$V (released)"
+
+  # Optional: deploy a website that serves released/ (see README).
+  # deploy:
+  #   needs: release
+  #   uses: ./.github/workflows/deploy-site.yml
+  #   secrets: inherit

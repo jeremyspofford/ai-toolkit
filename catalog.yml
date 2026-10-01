@@ -1,0 +1,76 @@
+# Drives the Toolkit page on jeremyspofford.dev. One entry per tool.
+tools:
+  - id: resume-as-code
+    title: Resume as Code
+    kind: Template
+    problem: Your resume lives in three places, none match, and you can't tell which version a recruiter saw.
+    what: A repo template. The YAML source renders a 2-page PDF (the build fails if it's longer); CI tags every version and keeps a `latest` draft; a manual run promotes a version to `released`. It includes no-fabrication rules for AI help, a monthly review procedure for a scheduled assistant, and an optional Obsidian mirror.
+    install: |
+      gh repo create my-resume --private --clone && cd my-resume
+      curl -fsSL https://github.com/jeremyspofford/ai-toolkit/archive/refs/heads/main.tar.gz \
+        | tar -xz --strip-components=3 "ai-toolkit-main/templates/resume-as-code"
+      pip install typst pyyaml pypdf && python3 resume/build.py
+    configure: Replace the example in `resume/resume.yml`, then fill in "Your settings" in `RULES.md`.
+    output: A versioned PDF and Markdown on every push, plus a changelog with the before/after text of every change.
+    source: templates/resume-as-code
+    post: resume-as-code
+
+  - id: timecard
+    title: Timecard summary
+    kind: Skill
+    problem: Friday afternoon, reconstructing the week for a timecard from memory, across several clients.
+    what: Reads your commits across every client repo (feature branches included), Jira activity, and a work log, then writes one short paragraph per client per day. Multi-day infrastructure work is spread across the days it happened. It never invents work and leaves hours to you.
+    install: |
+      claude plugin marketplace add jeremyspofford/ai-toolkit
+      claude plugin install ai-toolkit@jeremyspofford
+    configure: In `~/.config/ai-toolkit/config.yml`, set `identity` (the name and email variants your commits use) and `timecard` (workspace folder, folders to skip, work log). Run `/ai-toolkit:timecard`, or schedule it for Fridays.
+    output: |
+      Timecard: Mon Oct 5 – Fri Oct 9, 2026
+      ## Client A
+      **Mon Oct 5** - Moved Lambda secrets from CI variables into Secrets Manager with cold-start caching, and removed the plaintext copies from the pipeline config. The staging rollout is still pending a change window.
+    source: plugins/ai-toolkit/skills/timecard/SKILL.md
+
+  - id: tailor-resume
+    title: Tailor a resume (honestly)
+    kind: Skill
+    problem: Tailoring a resume to each posting is slow, and AI tools happily invent experience you don't have.
+    what: Builds a role-specific resume from your verified evidence only. It reorders, emphasizes, and uses the posting's vocabulary where it truthfully fits. It also writes a gap report rating every requirement strong, adjacent, or gap, with honest ways to handle the gaps.
+    install: |
+      claude plugin marketplace add jeremyspofford/ai-toolkit
+      claude plugin install ai-toolkit@jeremyspofford
+    configure: Point `resume.source` at your resume (YAML or Markdown), then run `/ai-toolkit:tailor-resume` with the posting pasted in or linked.
+    output: |
+      | Requirement            | Rating   | Evidence                                   |
+      |------------------------|----------|--------------------------------------------|
+      | Terraform at scale     | strong   | 4-account landing zone, shared modules     |
+      | GitHub Actions         | adjacent | GitLab CI (same patterns, different tool)  |
+      | Kubernetes operators   | gap      | None, so address in the cover letter       |
+    source: plugins/ai-toolkit/skills/tailor-resume/SKILL.md
+
+  - id: evidence-capture
+    title: Evidence capture
+    kind: Skill
+    problem: Six months later you can't remember what you shipped, or what the number was.
+    what: At the end of a work session, separates what you actually completed from what was only suggested or left unfinished, rates how much it matters, and appends a sanitized entry (no client names) to your evidence log.
+    install: |
+      claude plugin marketplace add jeremyspofford/ai-toolkit
+      claude plugin install ai-toolkit@jeremyspofford
+    configure: Set `resume.evidence_log` to a Markdown file, then run `/ai-toolkit:evidence-capture` before you close a session.
+    output: |
+      ### E-20261009-mr-pipeline-change-detection
+      - what: Rebuilt change detection so dev MR pipelines only run affected jobs
+      - metric: 30 min → 2 min (full pipeline before vs. after, dev MR)
+      - materiality: major
+    source: plugins/ai-toolkit/skills/evidence-capture/SKILL.md
+
+  - id: jira
+    title: Jira workflows
+    kind: Skill
+    problem: Context-switching between the terminal and Jira to create tickets, start branches, and move statuses.
+    what: Creates issues with real acceptance criteria, starts work (branches from your base branch with your naming pattern and moves the ticket to In Progress), and updates status and comments using the substance of your recent commits. It asks before anything others will see.
+    install: |
+      claude plugin marketplace add jeremyspofford/ai-toolkit
+      claude plugin install ai-toolkit@jeremyspofford
+    configure: Needs an Atlassian connector. Set the `jira` section (site, project keys, base branch, branch pattern), then say "start PROJ-201" or run `/ai-toolkit:jira create a task to …`.
+    output: "Created PROJ-214 \"Rotate service account keys automatically\" with 4 acceptance criteria. Branch proj-214-rotate-service-account-keys created from origin/dev; status → In Progress."
+    source: plugins/ai-toolkit/skills/jira/SKILL.md

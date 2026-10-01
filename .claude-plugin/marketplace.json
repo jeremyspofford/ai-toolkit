@@ -1,0 +1,12 @@
+{
+  "name": "jeremyspofford",
+  "description": "Practical Claude Code tools from a working DevOps engineer: timecard summaries, resume tailoring, evidence capture, Jira workflows.",
+  "owner": { "name": "Jeremy Spofford", "url": "https://jeremyspofford.dev" },
+  "plugins": [
+    {
+      "name": "ai-toolkit",
+      "source": "./plugins/ai-toolkit",
+      "description": "Timecard summaries from git/Jira, honest resume tailoring with gap reports, end-of-session evidence capture, and Jira create/start/update workflows."
+    }
+  ]
+}
